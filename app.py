@@ -6,12 +6,16 @@ import pandas as pd
 
 # --- Database ---
 def get_connection():
-    conn = sqlite3.connect("database.db", check_same_thread=False)   
+    conn = sqlite3.connect("database.db", check_same_thread=False) 
+ 
     return conn
+
 
 def init_db():
     def get_connection():
         conn = get_connection()
+
+
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS employees (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,6 +27,7 @@ def init_db():
         end_date TEXT,
         FOREIGN KEY(employee_id) REFERENCES employees(id))''')
    
+
     conn.commit()
 
 
@@ -39,8 +44,10 @@ def add_employee(name):
     conn.commit()
 
 def add_leave(employee_id, start_date, end_date):
-    conn.execute("INSERT INTO leaves (employee_id, start_date, end_date) VALUES (?, ?, ?)", 
-                 (employee_id, start_date, end_date))
+    conn.execute(
+    "INSERT INTO leaves (employee_id, start_date, end_date, leave_type) VALUES (?, ?, ?, ?)",
+    (employee_id, start_date, end_date, leave_type)
+)
     conn.commit()
 
 def delete_leave(leave_id):
@@ -50,6 +57,7 @@ def delete_leave(leave_id):
 def get_leave_days(start_date, end_date):
     days = pd.date_range(start=start_date, end=end_date, freq='B')  # 'B' = business days (excludes weekends)
     return len(days)
+
 
 # --- App UI ---
 st.set_page_config(layout="wide")
@@ -87,12 +95,17 @@ employee_dict = {name: eid for eid, name in employee_list}
 employee_name = st.sidebar.selectbox("Select Employee", employee_dict.keys())
 leave_start = st.sidebar.date_input("Start Date")
 leave_end = st.sidebar.date_input("End Date")
+leave_type = st.sidebar.selectbox(
+    "Leave Type",
+    ["Annual Leave", "Personal Leave", "Unpaid Leave", "Sick Leave", "Other"]
+)
 if st.sidebar.button("Add Leave"):
     if leave_end < leave_start:
         st.sidebar.error("End date must be after start date.")
     else:
         add_leave(employee_dict[employee_name], leave_start.isoformat(), leave_end.isoformat())
         st.sidebar.success("Leave added!")
+
 
 
 st.sidebar.markdown("<hr style='border: 1px solid #bbb;'>", unsafe_allow_html=True) 
@@ -210,6 +223,6 @@ if not leaves.empty:
         col3.write(row['end_date'].date())
         if col4.button("🗑️ Delete", key=f"del_{row['id']}"):
             delete_leave(row['id'])
-            st.experimental_rerun()
+            st.rerun()
 else:
     st.info("No leave entries yet.")
