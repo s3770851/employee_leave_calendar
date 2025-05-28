@@ -15,6 +15,10 @@ try:
     st.success("✅ 'leave_type' column added successfully.")
 except Exception as e:
     st.warning(f"⚠️ Could not add column: {e}")
+    cols = conn.execute("PRAGMA table_info(leaves)").fetchall()
+col_names = [col[1] for col in cols]
+st.write("Current columns in 'leaves':", col_names)
+
 #End
 def init_db():
     conn = get_connection()
