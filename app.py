@@ -150,6 +150,50 @@ if st.sidebar.button("Search"):
     else:
         st.info("No records match your search.")
 st.sidebar.markdown("<hr style='border: 1px solid #bbb;'>", unsafe_allow_html=True)
+
+# =======================
+# 📋 LEAVE REPORT SECTION
+# =======================
+st.sidebar.subheader("📋 Leave Report")
+
+# Sidebar date inputs
+report_start = st.sidebar.date_input("Start Date", key="report_start")
+report_end = st.sidebar.date_input("End Date", key="report_end")
+
+# Leave report trigger button
+generate_report = st.sidebar.button("Generate Report")
+
+if generate_report:
+    if report_start and report_end and report_start <= report_end:
+        # Query leave records within range
+        query = """
+            SELECT e.name AS employee_name, l.leave_type, l.start_date, l.end_date
+            FROM leaves l
+            JOIN employees e ON l.employee_id = e.id
+            WHERE l.start_date <= ? AND l.end_date >= ?
+            ORDER BY l.start_date
+        """
+        leave_df = pd.read_sql_query(query, conn, params=(report_end, report_start))
+
+        st.subheader("📄 Leave Report Results")
+        if leave_df.empty:
+            st.info("No leave found in the selected date range.")
+        else:
+            st.dataframe(leave_df)
+
+            # Optional download
+            csv = leave_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="⬇️ Download Report as CSV",
+                data=csv,
+                file_name='leave_report.csv',
+                mime='text/csv',
+            )
+    else:
+        st.warning("Please select a valid start and end date.")
+
+
+st.sidebar.markdown("<hr style='border: 1px solid #bbb;'>", unsafe_allow_html=True)
 # Remove employee
 st.sidebar.header("❌ Remove Employee")
 
