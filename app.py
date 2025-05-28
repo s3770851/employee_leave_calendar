@@ -7,7 +7,7 @@ import pandas as pd
 # --- Database ---
 def get_connection():
     conn = sqlite3.connect("database.db", check_same_thread=False)   
-
+    return conn
 
 def init_db():
     def get_connection():
