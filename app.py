@@ -7,19 +7,20 @@ import pandas as pd
 # --- Database ---
 def get_connection():
     conn = sqlite3.connect("database.db", check_same_thread=False)
-    return conn
-# -- TEMPORARY one-time migration to add leave_type column --
+   # -- One-time migration to add 'leave_type' column --
+    
 try:
     conn.execute("ALTER TABLE leaves ADD COLUMN leave_type TEXT DEFAULT 'Annual Leave'")
     conn.commit()
-    st.success("✅ 'leave_type' column added successfully.")
+    
+    st.success("✅ 'leave_type' column added to the leaves table.")
 except Exception as e:
-    st.warning(f"⚠️ Could not add column: {e}")
-    cols = conn.execute("PRAGMA table_info(leaves)").fetchall()
-col_names = [col[1] for col in cols]
-st.write("Current columns in 'leaves':", col_names)
+    st.error(f"❌ Error adding 'leave_type' column: {e}")
 
-#End
+
+
+    
+
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
