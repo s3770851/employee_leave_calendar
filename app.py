@@ -94,8 +94,10 @@ if st.sidebar.button("Add Leave"):
         add_leave(employee_dict[employee_name], leave_start.isoformat(), leave_end.isoformat())
         st.sidebar.success("Leave added!")
 
- 
+
 st.sidebar.markdown("<hr style='border: 1px solid #bbb;'>", unsafe_allow_html=True) 
+
+
 
 
 # Search Records
