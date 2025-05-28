@@ -72,7 +72,7 @@ with st.sidebar:
         add_employee(new_employee)
         st.success("Employee added!")
 
-
+st.sidebar.markdown("<hr style='border: 1px solid #bbb;'>", unsafe_allow_html=True)
 
 
 # Add new leave
@@ -88,8 +88,13 @@ if st.sidebar.button("Add Leave"):
     else:
         add_leave(employee_dict[employee_name], leave_start.isoformat(), leave_end.isoformat())
         st.sidebar.success("Leave added!")
-        st.sidebar.header("🔍 Search Leave Records")
 
+ 
+st.sidebar.markdown("<hr style='border: 1px solid #bbb;'>", unsafe_allow_html=True) 
+
+
+# Search Records
+st.sidebar.header("🔍 Search Leave Records")
 search_employees = ["All"] + list(employee_dict.keys())
 search_name = st.sidebar.selectbox("Filter by Employee", search_employees)
 search_start = st.sidebar.date_input("Start Date (Search)", value=None, key="search_start")
@@ -117,7 +122,6 @@ if st.sidebar.button("Search"):
         params.append(search_end.isoformat())
 
     filtered_leaves = pd.read_sql_query(query, conn, params=params)
-
     st.subheader("🔍 Search Results")
     if not filtered_leaves.empty:
         filtered_leaves['start_date'] = pd.to_datetime(filtered_leaves['start_date']).dt.date
@@ -125,7 +129,7 @@ if st.sidebar.button("Search"):
         st.dataframe(filtered_leaves, use_container_width=True)
     else:
         st.info("No records match your search.")
-
+st.sidebar.markdown("<hr style='border: 1px solid #bbb;'>", unsafe_allow_html=True)
 # Remove employee
 st.sidebar.header("❌ Remove Employee")
 
