@@ -3,11 +3,19 @@ import sqlite3
 from datetime import datetime, timedelta
 import pandas as pd
 
+
 # --- Database ---
 def get_connection():
     conn = sqlite3.connect("database.db", check_same_thread=False)
     return conn
-
+# -- TEMPORARY one-time migration to add leave_type column --
+try:
+    conn.execute("ALTER TABLE leaves ADD COLUMN leave_type TEXT DEFAULT 'Annual Leave'")
+    conn.commit()
+    st.success("✅ 'leave_type' column added successfully.")
+except Exception as e:
+    st.warning(f"⚠️ Could not add column: {e}")
+#End
 def init_db():
     conn = get_connection()
     cursor = conn.cursor()
