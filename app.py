@@ -5,21 +5,14 @@ import pandas as pd
 
 
 # --- Database ---
-def get_connection():
-    conn = sqlite3.connect("database.db", check_same_thread=False)
-   # -- One-time migration to add 'leave_type' column --
-    
+#def get_connection():
+conn = sqlite3.connect("database.db", check_same_thread=False)   
 try:
     conn.execute("ALTER TABLE leaves ADD COLUMN leave_type TEXT DEFAULT 'Annual Leave'")
-    conn.commit()
-    
+    conn.commit() 
     st.success("✅ 'leave_type' column added to the leaves table.")
 except Exception as e:
-    st.error(f"❌ Error adding 'leave_type' column: {e}")
-
-
-
-    
+    st.error(f"❌ Error adding 'leave_type' column: {e}")  
 
 def init_db():
     conn = get_connection()
