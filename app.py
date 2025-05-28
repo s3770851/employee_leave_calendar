@@ -9,13 +9,14 @@ import pandas as pd
 conn = sqlite3.connect("database.db", check_same_thread=False)   
 try:
     conn.execute("ALTER TABLE leaves ADD COLUMN leave_type TEXT DEFAULT 'Annual Leave'")
-    conn.commit() 
-    st.success("✅ 'leave_type' column added to the leaves table.")
+    conn.commit()
+    st.success("leave_type column added to leaves table.")
 except Exception as e:
-    st.error(f"❌ Error adding 'leave_type' column: {e}")  
+    st.info("leave_type column may already exist. Skipping...")
 
 def init_db():
-    conn = get_connection()
+    def get_connection():
+        conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS employees (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
