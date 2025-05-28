@@ -5,8 +5,8 @@ import pandas as pd
 
 
 # --- Database ---
-#def get_connection():
-conn = sqlite3.connect("database.db", check_same_thread=False)   
+def get_connection():
+    conn = sqlite3.connect("database.db", check_same_thread=False)   
 
 
 def init_db():
@@ -23,7 +23,7 @@ def init_db():
         end_date TEXT,
         FOREIGN KEY(employee_id) REFERENCES employees(id))''')
    
-conn.commit()
+    conn.commit()
 
 
 
