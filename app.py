@@ -2,6 +2,14 @@ import streamlit as st
 import sqlite3
 from datetime import datetime, timedelta
 import pandas as pd
+from supabase import create_client, Client
+import pandas as pd
+
+# Replace with your own values
+url = "https://nlbifkmfeutevzgecpwo.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sYmlma21mZXV0ZXZ6Z2VjcHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0OTIzNjEsImV4cCI6MjA2NDA2ODM2MX0.ZMA5u7qPPtuS1GlaaeWNRXQdQZQjqg4UqD9gOL9Qi1k"
+
+supabase: Client = create_client(url, key)
 
 
 # --- Database ---
@@ -25,25 +33,39 @@ def init_db():
 
     conn.commit()
 
+# Fetch all leave records with employee names
+response = supabase.table("leaves").select("*, employees(name)").execute()
+
+# Check for errors
+if response.error:
+    st.error(f"Error fetching data: {response.error.message}")
+else:
+    df = pd.DataFrame(response.data)
+    st.dataframe(df)
 
 
 # --- Helper Functions ---
 def get_employees():
-    return conn.execute("SELECT * FROM employees").fetchall()
+    response = supabase.table("employees").select("*").execute()
+employees = response.data
+
 
 def get_leaves():
-    return conn.execute("SELECT * FROM leaves").fetchall()
+   response = supabase.table("leaves").select("*, employees(name)").execute()
+leave_data = pd.DataFrame(response.data)
+
 
 def add_employee(name):
-    conn.execute("INSERT INTO employees (name) VALUES (?)", (name,))
-    conn.commit()
+    supabase.table("employees").insert({"name": name}).execute()
 
 def add_leave(employee_id, start_date, end_date):
-    conn.execute(
-    "INSERT INTO leaves (employee_id, start_date, end_date, leave_type) VALUES (?, ?, ?, ?)",
-    (employee_id, start_date, end_date, leave_type)
-)
-    conn.commit()
+    supabase.table("leaves").insert({
+    "employee_id": employee_id,
+    "start_date": str(start_date),
+    "end_date": str(end_date),
+    "leave_type": leave_type
+}).execute()
+
 
 def delete_leave(leave_id):
     conn.execute("DELETE FROM leaves WHERE id = ?", (leave_id,))
@@ -71,6 +93,21 @@ with col2:
 
 conn = get_connection()
 init_db()
+# Fetch employees from Supabase
+response = supabase.table("employees").select("*").execute()
+if response.error:
+    st.error("Failed to load employees")
+else:
+    employee_list = response.data
+
+    # Create a name → id mapping
+    employee_dict = {emp["name"]: emp["id"] for emp in employee_list}
+
+    # Dropdown for employee names
+    selected_employee_name = st.selectbox("Select Employee", list(employee_dict.keys()))
+
+    # Get the ID from the selected name
+    employee_id = employee_dict[selected_employee_name]
 
 # Add new employee
 with st.sidebar:
@@ -204,7 +241,8 @@ if employee_dict:
         if confirm:
             emp_id = employee_dict[remove_name]
             conn.execute("DELETE FROM leaves WHERE employee_id = ?", (emp_id,))
-            conn.execute("DELETE FROM employees WHERE id = ?", (emp_id,))
+            supabase.table("employees").delete().eq("id", employee_id).execute()
+
             conn.commit()
 
             st.sidebar.success(f"Removed employee: {remove_name}")
