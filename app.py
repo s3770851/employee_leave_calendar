@@ -271,30 +271,6 @@ if not leaves.empty:
 else:
     st.info("No leave entries yet.")
 
-    # Join leaves with employee names
-leaves_df = pd.read_sql_query("""
-    SELECT l.id, e.name AS employee_name, l.start_date, l.end_date, l.leave_type
-    FROM leaves l
-    JOIN employees e ON l.employee_id = e.id
-    ORDER BY l.start_date
-""", conn)
-
-# Convert dates to datetime
-leaves_df["start_date"] = pd.to_datetime(leaves_df["start_date"])
-leaves_df["end_date"] = pd.to_datetime(leaves_df["end_date"])
-
-# Calculate leave days excluding weekends
-def count_leave_days(start, end):
-    all_days = pd.date_range(start, end)
-    weekdays = all_days[~all_days.weekday.isin([5, 6])]  # 5 = Saturday, 6 = Sunday
-    return len(weekdays)
-
-leaves_df["leave_days"] = leaves_df.apply(
-    lambda row: count_leave_days(row["start_date"], row["end_date"]), axis=1
-)
-
-# Display the table
-st.subheader("🛠 Manage Leave")
-st.dataframe(leaves_df)
+   
 
 #python -m streamlit run app.py
